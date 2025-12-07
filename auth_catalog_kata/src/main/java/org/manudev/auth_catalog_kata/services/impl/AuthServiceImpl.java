@@ -1,6 +1,5 @@
-package org.manudev.auth_catalog_kata.services;
+package org.manudev.auth_catalog_kata.services.impl;
 
-import lombok.RequiredArgsConstructor;
 import org.manudev.auth_catalog_kata.entities.Role;
 import org.manudev.auth_catalog_kata.entities.User;
 import org.manudev.auth_catalog_kata.repository.IUsersRepository;
@@ -11,14 +10,14 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 
 @Service
-public class AuthService {
+public class AuthServiceImpl {
 
     private final IUsersRepository userRepository;
     private final JwtUtil jwtUtil;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
 
-    public AuthService(IUsersRepository userRepository, JwtUtil jwtUtil) {
+    public AuthServiceImpl(IUsersRepository userRepository, JwtUtil jwtUtil) {
         this.userRepository = userRepository;
         this.jwtUtil = jwtUtil;
     }

@@ -1,5 +1,6 @@
 package org.manudev.auth_catalog_kata.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -32,8 +33,7 @@ public class Role {
     private String name;
 
     @ManyToMany(mappedBy = "roles")
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
     @Builder.Default
+    @JsonIgnore
     private Set<User> users = new HashSet<>();
 }
