@@ -8,22 +8,32 @@ import lombok.NoArgsConstructor;
 import java.util.HashSet;
 import java.util.Set;
 
-@Builder
+import lombok.Getter;
+import lombok.Setter;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+
 @Entity
 @Table(name = "roles")
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Role {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
-
 
     @Column(unique = true, nullable = false)
     private String name;
 
-
     @ManyToMany(mappedBy = "roles")
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @Builder.Default
     private Set<User> users = new HashSet<>();
 }
