@@ -1,6 +1,6 @@
 package org.manudev.auth_catalog_kata.services.impl;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import org.manudev.auth_catalog_kata.dto.UserRegisterDTO;
 import org.manudev.auth_catalog_kata.entities.Role;
 import org.manudev.auth_catalog_kata.entities.User;
