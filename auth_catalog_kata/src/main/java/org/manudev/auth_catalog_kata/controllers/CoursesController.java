@@ -71,7 +71,7 @@ public class CoursesController {
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<CourseResponseDTO> deleteCourseById(@PathVariable Long id) {
-        return coursesService.deleteCourseById(id) ? ResponseEntity.ok().build() : ResponseEntity.notFound().build();
+        return coursesService.deleteCourseById(id) ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
 
     /**

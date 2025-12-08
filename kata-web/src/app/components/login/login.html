@@ -1,0 +1,51 @@
+<div class="login-container">
+  <div class="login-box">
+    <h1 class="login-title">Kata Courses</h1>
+
+    @if (errorMessage) {
+      <div class="error-message">
+        {{ errorMessage }}
+      </div>
+    }
+
+    <form (ngSubmit)="onLogin()" class="login-form">
+      <div class="form-group">
+        <label for="email" class="form-label">Email</label>
+        <input
+          id="email"
+          type="email"
+          [(ngModel)]="email"
+          name="email"
+          placeholder="tu@email.com"
+          class="form-input"
+          [disabled]="isLoading"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="password" class="form-label">Contraseña</label>
+        <input
+          id="password"
+          type="password"
+          [(ngModel)]="password"
+          name="password"
+          placeholder="••••••••"
+          class="form-input"
+          [disabled]="isLoading"
+        />
+      </div>
+
+      <button
+        type="submit"
+        [disabled]="isLoading || !email || !password"
+        class="submit-button"
+      >
+        {{ isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión' }}
+      </button>
+    </form>
+
+    <p class="form-footer">
+      Ingresa con tu email y contraseña para iniciar sesión.
+    </p>
+  </div>
+</div>

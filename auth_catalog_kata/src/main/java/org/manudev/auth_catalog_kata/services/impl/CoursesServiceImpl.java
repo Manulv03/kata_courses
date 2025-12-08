@@ -72,11 +72,15 @@ public class CoursesServiceImpl implements ICoursesService {
     }
 
     @Override
+    @Transactional
     public boolean deleteCourseById(Long id) {
-        return courseRepository.deleteCourseById(id);
+        if (!courseRepository.existsById(id)) return false;
+        courseRepository.deleteById(id);
+        return true;
     }
 
     @Override
+    @Transactional
     public CourseResponseDTO updateCourseById(Long id, CourseRequestDTO request) {
 
         Course course = courseRepository.findById(id).orElseThrow(

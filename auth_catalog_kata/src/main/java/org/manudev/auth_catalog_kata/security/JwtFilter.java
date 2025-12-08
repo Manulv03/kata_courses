@@ -42,7 +42,6 @@ public class JwtFilter extends OncePerRequestFilter {
             Jws<Claims> jws = jwtUtil.parseToken(token);
             Claims claims = jws.getBody();
 
-            // extraer roles desde claims (adapta según cómo generes claims)
             Object rolesObj = claims.get("roles");
             List<String> roles = new ArrayList<>();
             if (rolesObj instanceof Collection) {
@@ -72,10 +71,7 @@ public class JwtFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
 
         } catch (Exception ex) {
-            // Si el header existía pero el token es inválido -> 401
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType("application/json");
-            response.getWriter().write("{\"error\":\"Token inválido\"}");
+            throw  new ServletException(ex);
         }
     }
 }

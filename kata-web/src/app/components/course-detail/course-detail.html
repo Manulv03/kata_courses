@@ -1,0 +1,56 @@
+<div class="detail-container">
+  <div class="detail-header">
+    <button (click)="goBack()" class="btn-back">
+      ← Volver al Dashboard
+    </button>
+  </div>
+
+  @if (isLoading) {
+    <div class="loading-state">Cargando detalle del curso...</div>
+  } @else if (error) {
+    <div class="error-state">
+      <p>{{ error }}</p>
+      <button (click)="goBack()" class="btn-primary">Volver</button>
+    </div>
+  } @else if (course) {
+    <div class="detail-content">
+      <div class="course-header-detail">
+        @if (course.badgeImage) {
+          <img [src]="course.badgeImage" [alt]="course.title" class="course-badge" />
+        }
+        <div class="course-info">
+          <span class="course-module-tag">{{ course.module }}</span>
+          <h1 class="course-title-detail">{{ course.title }}</h1>
+          <p class="course-meta">
+            <span class="meta-item">
+              <strong>Duración:</strong> {{ course.durationHours }} horas
+            </span>
+            <span class="meta-item">
+              <strong>Creado:</strong> {{ course.createdAt | date: 'dd/MM/yyyy' }}
+            </span>
+            <span class="meta-item">
+              <strong>Actualizado:</strong> {{ course.updatedAt | date: 'dd/MM/yyyy' }}
+            </span>
+          </p>
+        </div>
+      </div>
+
+      <div class="course-description-section">
+        <h2>Descripción</h2>
+        <p class="course-description-text">{{ course.description }}</p>
+      </div>
+
+      <div class="course-actions">
+        @if (isAdmin$ | async) {
+          <div class="admin-actions">
+            <p class="admin-note">Como administrador, puedes editar o eliminar este curso desde el dashboard.</p>
+          </div>
+        } @else {
+          <div class="user-actions">
+            <p class="user-note">Explora este curso y sus módulos para mejorar tus habilidades.</p>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

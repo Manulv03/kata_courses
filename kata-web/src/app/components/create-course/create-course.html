@@ -1,0 +1,117 @@
+<div class="modal-overlay" (click)="onClose()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 class="modal-title">Crear Nuevo Curso</h2>
+      <button class="close-btn" (click)="onClose()" [disabled]="isLoading">
+        ✕
+      </button>
+    </div>
+
+    @if (successMessage) {
+      <div class="success-message">
+        {{ successMessage }}
+      </div>
+    }
+
+    @if (errorMessage) {
+      <div class="error-message">
+        {{ errorMessage }}
+      </div>
+    }
+
+    <form (ngSubmit)="onSubmit()" class="create-course-form">
+      <div class="form-group">
+        <label for="title" class="form-label">Título del curso *</label>
+        <input
+          id="title"
+          type="text"
+          [(ngModel)]="formData.title"
+          name="title"
+          placeholder="Ej: Spring Boot Avanzado"
+          class="form-input"
+          [disabled]="isLoading"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="description" class="form-label">Descripción *</label>
+        <textarea
+          id="description"
+          [(ngModel)]="formData.description"
+          name="description"
+          placeholder="Describa el contenido del curso"
+          class="form-textarea"
+          [disabled]="isLoading"
+          rows="4"
+          required
+        ></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="module" class="form-label">Módulo *</label>
+          <select
+            id="module"
+            [(ngModel)]="formData.module"
+            name="module"
+            class="form-input"
+            [disabled]="isLoading"
+            required
+          >
+            <option value="">Seleccionar módulo</option>
+            @for (module of availableModules; track module) {
+              <option [value]="module">{{ module }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="duration" class="form-label">Duración (horas) *</label>
+          <input
+            id="duration"
+            type="number"
+            [(ngModel)]="formData.duration"
+            name="duration"
+            placeholder="Ej: 8"
+            class="form-input"
+            [disabled]="isLoading"
+            min="1"
+            required
+          />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="image" class="form-label">URL Imagen</label>
+        <input
+          id="image"
+          type="url"
+          [(ngModel)]="formData.image"
+          name="image"
+          placeholder="Ej: https://..."
+          class="form-input"
+          [disabled]="isLoading"
+        />
+      </div>
+
+      <div class="form-actions">
+        <button
+          type="button"
+          (click)="onClose()"
+          class="btn-cancel"
+          [disabled]="isLoading"
+        >
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          class="btn-submit"
+          [disabled]="isLoading"
+        >
+          {{ isLoading ? 'Creando...' : 'Crear Curso' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

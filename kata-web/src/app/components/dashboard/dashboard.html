@@ -1,0 +1,153 @@
+<div class="dashboard-container">
+  <nav class="navbar">
+    <div class="navbar-content">
+      <h1 class="navbar-title">Kata Courses</h1>
+      <button (click)="onLogout()" class="logout-button">
+        Cerrar Sesión
+      </button>
+    </div>
+  </nav>
+
+  <div class="dashboard-content">
+    <div class="dashboard-card">
+      <h2 class="dashboard-title">¡Bienvenido!</h2>
+      <p class="dashboard-subtitle">
+        Has iniciado sesión correctamente. Este es tu dashboard.
+      </p>
+
+      <div class="cards-grid">
+        @if (isAdmin$ | async) {
+          <div class="card card-blue">
+            <h3 class="card-title">Administrar cursos</h3>
+            <p class="card-description">Crear, editar y eliminar cursos</p>
+          </div>
+          <div class="card card-purple">
+            <h3 class="card-title">Gestión de usuarios</h3>
+            <p class="card-description">Acciones de usuario y permisos</p>
+          </div>
+          <div class="card card-green">
+            <h3 class="card-title">Vista de estudiante</h3>
+            <p class="card-description">Ver detalle y módulos como un usuario</p>
+          </div>
+        } @else {
+          <div class="card card-blue">
+            <h3 class="card-title">Cursos disponibles</h3>
+            <p class="card-description">Ver detalle de cada curso</p>
+          </div>
+          <div class="card card-purple">
+            <h3 class="card-title">Módulos</h3>
+            <p class="card-description">Explora los módulos de tus cursos</p>
+          </div>
+          <div class="card card-green">
+            <h3 class="card-title">Tu progreso</h3>
+            <p class="card-description">Sigue tu avance en los cursos</p>
+          </div>
+        }
+      </div>
+
+      <!-- Lista de cursos -->
+      <div class="courses-section">
+        <div class="section-header">
+          <h3 class="section-title">Cursos Disponibles</h3>
+          
+          <!-- Controles: Filtro y Botón Crear -->
+          <div class="section-controls">
+            <div class="filter-container">
+              <select 
+                [(ngModel)]="selectedModule" 
+                (change)="filterByModule()"
+                class="module-filter"
+              >
+                <option value="">Todos los módulos</option>
+                @for (module of availableModules; track module) {
+                  <option [value]="module">{{ module }}</option>
+                }
+              </select>
+              @if (selectedModule) {
+                <button (click)="clearFilter()" class="clear-filter-btn">
+                  Limpiar filtro
+                </button>
+              }
+            </div>
+
+            @if (isAdmin$ | async) {
+              <button (click)="openCreateModal()" class="btn-create-course">
+                + Crear Curso
+              </button>
+            }
+          </div>
+        </div>
+        
+        @if (isLoadingCourses) {
+          <div class="loading-state">Cargando cursos...</div>
+        } @else if (courses.length === 0) {
+          <div class="empty-state">No hay cursos disponibles</div>
+        } @else {
+          <div class="courses-grid">
+            @for (course of courses; track course.id) {
+              <div class="course-card">
+                <div class="course-header">
+                  <span class="course-module">{{ course.module }}</span>
+                  <span class="course-duration">{{ course.durationHours }}h</span>
+                </div>
+                <h4 class="course-title">{{ course.title }}</h4>
+                <p class="course-description">{{ course.description }}</p>
+                <div class="course-footer">
+                  @if (isAdmin$ | async) {
+                    <button class="btn-edit" (click)="openEditModal(course)">Editar</button>
+                    <button 
+                      class="btn-delete" 
+                      (click)="deleteCourse(course)"
+                      [disabled]="deletingCourseId === course.id"
+                    >
+                      {{ deletingCourseId === course.id ? 'Eliminando...' : 'Eliminar' }}
+                    </button>
+                  }
+                  <button class="btn-view" (click)="viewCourseDetail(course)">Ver detalle</button>
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- Paginación -->
+          <div class="pagination">
+            <button 
+              (click)="loadCourses(currentPage - 1, pageSize, selectedModule || undefined)" 
+              [disabled]="currentPage === 0"
+              class="pagination-btn"
+            >
+              Anterior
+            </button>
+            <span class="pagination-info">
+              Página {{ currentPage + 1 }} de {{ totalPages }} ({{ totalElements }} cursos)
+            </span>
+            <button 
+              (click)="loadCourses(currentPage + 1, pageSize, selectedModule || undefined)" 
+              [disabled]="currentPage + 1 >= totalPages"
+              class="pagination-btn"
+            >
+              Siguiente
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para crear curso (solo admin) -->
+@if (showCreateModal) {
+  <app-create-course
+    (courseCreated)="onCourseCreated()"
+    (closed)="closeCreateModal()"
+  ></app-create-course>
+}
+
+<!-- Modal para editar curso (solo admin) -->
+@if (showEditModal && courseToEdit) {
+  <app-edit-course
+    [course]="courseToEdit"
+    (courseUpdated)="onCourseUpdated()"
+    (closed)="closeEditModal()"
+  ></app-edit-course>
+}
