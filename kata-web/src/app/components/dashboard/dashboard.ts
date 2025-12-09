@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Auth } from '../../services/auth';
 import { CoursesService } from '../../services/courses.service';
-import { Course, PageableCourse } from '../../models/course.model';
+import { Course, PageableCourse, Badge, UserProgressDetail } from '../../models/course.model';
 import { take } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 import { CreateCourseComponent } from '../create-course/create-course';
@@ -25,6 +25,12 @@ export class Dashboard implements OnInit {
   role$ = this.authService.role$;
   isAdmin$ = this.authService.isAdmin$;
   isUser$ = this.authService.isUser$;
+
+  activeView: 'courses' | 'badges' | 'progress' = 'courses';
+  badges: Badge[] = [];
+  isLoadingBadges = false;
+  userProgress: UserProgressDetail[] = [];
+  isLoadingProgress = false;
 
   courses: Course[] = [];
   isLoadingCourses = false;
@@ -151,5 +157,80 @@ export class Dashboard implements OnInit {
 
   viewCourseDetail(course: Course): void {
     this.router.navigate(['/course', course.id]);
+  }
+
+  switchView(view: 'courses' | 'badges' | 'progress'): void {
+    this.activeView = view;
+    this.cdr.detectChanges();
+    
+    if (view === 'badges' && this.badges.length === 0 && !this.authService.isAdmin()) {
+      this.loadBadges();
+    }
+    
+    if (view === 'progress' && this.userProgress.length === 0 && !this.authService.isAdmin()) {
+      this.loadUserProgress();
+    }
+  }
+
+  loadBadges(): void {
+    const userEmail = this.authService.getUserEmail();
+    if (!userEmail) {
+      console.error('No se pudo obtener el email del usuario');
+      return;
+    }
+
+    console.log('Cargando badges para:', userEmail);
+    this.isLoadingBadges = true;
+    this.cdr.detectChanges();
+
+    this.coursesService.getUserBadges(userEmail).subscribe({
+      next: (badges: Badge[]) => {
+        console.log('Badges recibidos:', badges);
+        console.log('Cantidad de badges:', badges.length);
+        this.badges = badges;
+        this.isLoadingBadges = false;
+        console.log('Estado actualizado - isLoadingBadges:', this.isLoadingBadges);
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error cargando badges:', err);
+        this.badges = [];
+        this.isLoadingBadges = false;
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  loadUserProgress(): void {
+    const userEmail = this.authService.getUserEmail();
+    if (!userEmail) {
+      console.error('No se pudo obtener el email del usuario');
+      return;
+    }
+
+    console.log('Cargando progreso para:', userEmail);
+    this.isLoadingProgress = true;
+    this.cdr.detectChanges();
+
+    this.coursesService.getAllUserProgress(userEmail).subscribe({
+      next: (progress: UserProgressDetail[]) => {
+        console.log('Progreso recibido:', progress);
+        console.log('Cantidad de cursos:', progress.length);
+        this.userProgress = progress;
+        this.isLoadingProgress = false;
+        console.log('Estado actualizado - isLoadingProgress:', this.isLoadingProgress);
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error cargando progreso:', err);
+        this.userProgress = [];
+        this.isLoadingProgress = false;
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  navigateToCourse(courseId: number): void {
+    this.router.navigate(['/courses', courseId]);
   }
 }

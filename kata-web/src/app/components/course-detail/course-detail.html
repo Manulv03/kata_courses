@@ -47,7 +47,56 @@
           </div>
         } @else {
           <div class="user-actions">
-            <p class="user-note">Explora este curso y sus módulos para mejorar tus habilidades.</p>
+            @if (completionSuccess && badgeEarned) {
+              <div class="badge-earned-message">
+                🏆 ¡Felicidades! Has completado el curso y ganado {{ badgeEarned }} badge(s)
+              </div>
+            }
+            @if (completionError) {
+              <div class="error-message">
+                ✗ {{ completionError }}
+              </div>
+            }
+            @if (userProgress) {
+              <div class="enrollment-status">
+                <div class="status-badge" [class]="'status-' + userProgress.status">
+                  {{ userProgress.status === 'started' ? 'En Progreso' : 'Completado ✓' }}
+                </div>
+                <div class="enrollment-details">
+                  <p><strong>Comenzaste:</strong> {{ userProgress.startedAt | date: 'dd/MM/yyyy HH:mm' }}</p>
+                  @if (userProgress.completedAt) {
+                    <p><strong>Completado:</strong> {{ userProgress.completedAt | date: 'dd/MM/yyyy HH:mm' }}</p>
+                  }
+                </div>
+                @if (userProgress.status === 'started') {
+                  <button
+                    class="btn-complete"
+                    (click)="completeCourse()"
+                    [disabled]="isCompletingCourse"
+                  >
+                    {{ isCompletingCourse ? 'Completando...' : 'Marcar como Completado' }}
+                  </button>
+                }
+              </div>
+            } @else {
+              @if (enrollmentSuccess) {
+                <div class="success-message">
+                  ✓ ¡Te has inscrito exitosamente en este curso!
+                </div>
+              }
+              @if (enrollmentError) {
+                <div class="error-message">
+                  ✗ {{ enrollmentError }}
+                </div>
+              }
+              <button
+                class="btn-enroll"
+                (click)="enrollCourse()"
+                [disabled]="isEnrolling"
+              >
+                {{ isEnrolling ? 'Inscribiendo...' : 'Inscribirse en este curso' }}
+              </button>
+            }
           </div>
         }
       </div>

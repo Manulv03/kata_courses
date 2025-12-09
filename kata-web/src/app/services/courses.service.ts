@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { PageableCourse, CourseRequestParams, CreateCourseRequest, CourseResponse, Course } from '../models/course.model';
+import { PageableCourse, CourseRequestParams, CreateCourseRequest, CourseResponse, Course, CreateUserProgressDto, UserProgress, UserProgressDetail, CompleteCourseResponse, Badge } from '../models/course.model';
 import { Auth } from './auth';
 
 @Injectable({
@@ -9,6 +9,7 @@ import { Auth } from './auth';
 })
 export class CoursesService {
   private apiUrl = 'http://localhost:8080/courses';
+  private apiUrlNest = 'http://localhost:3000';
   private http = inject(HttpClient);
   private authService = inject(Auth);
 
@@ -111,5 +112,103 @@ export class CoursesService {
     return this.http.get<Course>(`${this.apiUrl}/${id}`, {
       headers: headers,
     });
+  }
+
+  /**
+   * Inscribe un usuario en un curso
+   * @param userEmail - Email del usuario
+   * @param courseId - ID del curso
+   */
+  enrollCourse(userEmail: string, courseId: number): Observable<UserProgress> {
+    const token = this.authService.getToken();
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+    });
+
+    const body: CreateUserProgressDto = {
+      userEmail,
+      courseId,
+    };
+
+    console.log('Inscribiendo usuario en curso:', body);
+
+    return this.http.post<UserProgress>(`${this.apiUrlNest}/api/user-progress`, body, {
+      headers: headers,
+    });
+  }
+
+  /**
+   * Verifica si un usuario está inscrito en un curso
+   * @param userEmail - Email del usuario
+   * @param courseId - ID del curso
+   */
+  checkUserProgress(userEmail: string, courseId: number): Observable<UserProgressDetail> {
+    const token = this.authService.getToken();
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+    });
+
+    console.log('Verificando progreso del usuario:', userEmail, 'en curso:', courseId);
+
+    return this.http.get<UserProgressDetail>(
+      `${this.apiUrlNest}/api/user-progress/user/${userEmail}/${courseId}`,
+      { headers: headers }
+    );
+  }
+
+  /**
+   * Marca un curso como completado
+   * @param courseId - ID del curso
+   * @param userId - ID del usuario
+   */
+  completeCourse(courseId: number, userId: number): Observable<CompleteCourseResponse> {
+    const token = this.authService.getToken();
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+    });
+
+    console.log('Marcando curso como completado:', courseId, 'usuario:', userId);
+
+    return this.http.patch<CompleteCourseResponse>(
+      `${this.apiUrlNest}/api/user-progress/complete-course/${courseId}/${userId}`,
+      {},
+      { headers: headers }
+    );
+  }
+
+  /**
+   * Obtiene las insignias/badges de un usuario
+   * @param userEmail - Email del usuario
+   */
+  getUserBadges(userEmail: string): Observable<Badge[]> {
+    const token = this.authService.getToken();
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+    });
+
+    console.log('Obteniendo badges del usuario:', userEmail);
+
+    return this.http.get<Badge[]>(
+      `${this.apiUrlNest}/api/badges/user/${userEmail}`,
+      { headers: headers }
+    );
+  }
+
+  /**
+   * Obtiene todo el progreso de un usuario (todos los cursos iniciados/completados)
+   * @param userEmail - Email del usuario
+   */
+  getAllUserProgress(userEmail: string): Observable<UserProgressDetail[]> {
+    const token = this.authService.getToken();
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+    });
+
+    console.log('Obteniendo progreso completo del usuario:', userEmail);
+
+    return this.http.get<UserProgressDetail[]>(
+      `${this.apiUrlNest}/api/user-progress/user/${userEmail}`,
+      { headers: headers }
+    );
   }
 }

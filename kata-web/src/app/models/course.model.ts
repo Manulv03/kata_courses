@@ -52,3 +52,56 @@ export interface CourseResponse {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface User {
+  id: number;
+  email: string;
+  password: string;
+  name: string;
+  role: string;
+  createdAt: string;
+  userProgress: UserProgress[];
+}
+
+export interface UserProgress {
+  id: number;
+  user: User;
+  course: Course;
+  status: string;
+  startedAt: string;
+  completedAt: string | null;
+  updatedAt: string;
+}
+
+export interface CreateUserProgressDto {
+  userEmail: string;
+  courseId: number;
+}
+
+export interface UserProgressDetail {
+  userName: string;
+  courseId: number;
+  courseName: string;
+  startedAt: string;
+  completedAt: string | null;
+  status: string;
+}
+
+export interface CompleteCourseResponse {
+  message: string;
+  badge: number;
+  course: {
+    courseId: number;
+    userName: string;
+    courseTitle: string;
+    status: string;
+  };
+}
+
+export interface Badge {
+  code: string;
+  title: string;
+  description: string;
+  userid: string;
+  username: string;
+}

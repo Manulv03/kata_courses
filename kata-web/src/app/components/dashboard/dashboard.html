@@ -17,7 +17,7 @@
 
       <div class="cards-grid">
         @if (isAdmin$ | async) {
-          <div class="card card-blue">
+          <div class="card card-blue" (click)="switchView('courses')" [class.active]="activeView === 'courses'">
             <h3 class="card-title">Administrar cursos</h3>
             <p class="card-description">Crear, editar y eliminar cursos</p>
           </div>
@@ -30,15 +30,15 @@
             <p class="card-description">Ver detalle y módulos como un usuario</p>
           </div>
         } @else {
-          <div class="card card-blue">
+          <div class="card card-blue" (click)="switchView('courses')" [class.active]="activeView === 'courses'">
             <h3 class="card-title">Cursos disponibles</h3>
             <p class="card-description">Ver detalle de cada curso</p>
           </div>
-          <div class="card card-purple">
-            <h3 class="card-title">Módulos</h3>
-            <p class="card-description">Explora los módulos de tus cursos</p>
+          <div class="card card-purple" (click)="switchView('badges')" [class.active]="activeView === 'badges'">
+            <h3 class="card-title">Mis Insignias</h3>
+            <p class="card-description">Explora las insignias que has ganado</p>
           </div>
-          <div class="card card-green">
+          <div class="card card-green" (click)="switchView('progress')" [class.active]="activeView === 'progress'">
             <h3 class="card-title">Tu progreso</h3>
             <p class="card-description">Sigue tu avance en los cursos</p>
           </div>
@@ -46,91 +46,204 @@
       </div>
 
       <!-- Lista de cursos -->
-      <div class="courses-section">
-        <div class="section-header">
-          <h3 class="section-title">Cursos Disponibles</h3>
-          
-          <!-- Controles: Filtro y Botón Crear -->
-          <div class="section-controls">
-            <div class="filter-container">
-              <select 
-                [(ngModel)]="selectedModule" 
-                (change)="filterByModule()"
-                class="module-filter"
-              >
-                <option value="">Todos los módulos</option>
-                @for (module of availableModules; track module) {
-                  <option [value]="module">{{ module }}</option>
+      @if (activeView === 'courses') {
+        <div class="courses-section">
+          <div class="section-header">
+            <h3 class="section-title">Cursos Disponibles</h3>
+            
+            <!-- Controles: Filtro y Botón Crear -->
+            <div class="section-controls">
+              <div class="filter-container">
+                <select 
+                  [(ngModel)]="selectedModule" 
+                  (change)="filterByModule()"
+                  class="module-filter"
+                >
+                  <option value="">Todos los módulos</option>
+                  @for (module of availableModules; track module) {
+                    <option [value]="module">{{ module }}</option>
+                  }
+                </select>
+                @if (selectedModule) {
+                  <button (click)="clearFilter()" class="clear-filter-btn">
+                    Limpiar filtro
+                  </button>
                 }
-              </select>
-              @if (selectedModule) {
-                <button (click)="clearFilter()" class="clear-filter-btn">
-                  Limpiar filtro
+              </div>
+
+              @if (isAdmin$ | async) {
+                <button (click)="openCreateModal()" class="btn-create-course">
+                  + Crear Curso
                 </button>
               }
             </div>
+          </div>
+          
+          @if (isLoadingCourses) {
+            <div class="loading-state">Cargando cursos...</div>
+          } @else if (courses.length === 0) {
+            <div class="empty-state">No hay cursos disponibles</div>
+          } @else {
+            <div class="courses-grid">
+              @for (course of courses; track course.id) {
+                <div class="course-card">
+                  <div class="course-header">
+                    <span class="course-module">{{ course.module }}</span>
+                    <span class="course-duration">{{ course.durationHours }}h</span>
+                  </div>
+                  <h4 class="course-title">{{ course.title }}</h4>
+                  <p class="course-description">{{ course.description }}</p>
+                  <div class="course-footer">
+                    @if (isAdmin$ | async) {
+                      <button class="btn-edit" (click)="openEditModal(course)">Editar</button>
+                      <button 
+                        class="btn-delete" 
+                        (click)="deleteCourse(course)"
+                        [disabled]="deletingCourseId === course.id"
+                      >
+                        {{ deletingCourseId === course.id ? 'Eliminando...' : 'Eliminar' }}
+                      </button>
+                    }
+                    <button class="btn-view" (click)="viewCourseDetail(course)">Ver detalle</button>
+                  </div>
+                </div>
+              }
+            </div>
 
-            @if (isAdmin$ | async) {
-              <button (click)="openCreateModal()" class="btn-create-course">
-                + Crear Curso
+            <!-- Paginación -->
+            <div class="pagination">
+              <button 
+                (click)="loadCourses(currentPage - 1, pageSize, selectedModule || undefined)" 
+                [disabled]="currentPage === 0"
+                class="pagination-btn"
+              >
+                Anterior
               </button>
-            }
-          </div>
+              <span class="pagination-info">
+                Página {{ currentPage + 1 }} de {{ totalPages }} ({{ totalElements }} cursos)
+              </span>
+              <button 
+                (click)="loadCourses(currentPage + 1, pageSize, selectedModule || undefined)" 
+                [disabled]="currentPage + 1 >= totalPages"
+                class="pagination-btn"
+              >
+                Siguiente
+              </button>
+            </div>
+          }
         </div>
-        
-        @if (isLoadingCourses) {
-          <div class="loading-state">Cargando cursos...</div>
-        } @else if (courses.length === 0) {
-          <div class="empty-state">No hay cursos disponibles</div>
-        } @else {
-          <div class="courses-grid">
-            @for (course of courses; track course.id) {
-              <div class="course-card">
-                <div class="course-header">
-                  <span class="course-module">{{ course.module }}</span>
-                  <span class="course-duration">{{ course.durationHours }}h</span>
-                </div>
-                <h4 class="course-title">{{ course.title }}</h4>
-                <p class="course-description">{{ course.description }}</p>
-                <div class="course-footer">
-                  @if (isAdmin$ | async) {
-                    <button class="btn-edit" (click)="openEditModal(course)">Editar</button>
-                    <button 
-                      class="btn-delete" 
-                      (click)="deleteCourse(course)"
-                      [disabled]="deletingCourseId === course.id"
-                    >
-                      {{ deletingCourseId === course.id ? 'Eliminando...' : 'Eliminar' }}
-                    </button>
-                  }
-                  <button class="btn-view" (click)="viewCourseDetail(course)">Ver detalle</button>
-                </div>
-              </div>
-            }
-          </div>
+      }
 
-          <!-- Paginación -->
-          <div class="pagination">
-            <button 
-              (click)="loadCourses(currentPage - 1, pageSize, selectedModule || undefined)" 
-              [disabled]="currentPage === 0"
-              class="pagination-btn"
-            >
-              Anterior
-            </button>
-            <span class="pagination-info">
-              Página {{ currentPage + 1 }} de {{ totalPages }} ({{ totalElements }} cursos)
-            </span>
-            <button 
-              (click)="loadCourses(currentPage + 1, pageSize, selectedModule || undefined)" 
-              [disabled]="currentPage + 1 >= totalPages"
-              class="pagination-btn"
-            >
-              Siguiente
-            </button>
+      <!-- Sección de Badges -->
+      @if (activeView === 'badges') {
+        <div class="badges-section">
+          <div class="section-header">
+            <h3 class="section-title">Mis Insignias</h3>
+            <p class="section-subtitle">Explora las insignias que has ganado completando cursos</p>
           </div>
-        }
-      </div>
+          
+          @if (isLoadingBadges) {
+            <div class="loading-state">Cargando insignias...</div>
+          } @else if (badges.length === 0) {
+            <div class="empty-state">
+              <p>Aún no has ganado ninguna insignia</p>
+              <p class="empty-hint">Completa cursos para ganar insignias</p>
+            </div>
+          } @else {
+            <div class="badges-grid">
+              @for (badge of badges; track badge.code) {
+                <div class="badge-card">
+                  <div class="badge-icon">🏆</div>
+                  <h4 class="badge-title">{{ badge.title }}</h4>
+                  <p class="badge-description">{{ badge.description }}</p>
+                  <div class="badge-footer">
+                    <span class="badge-code">Código: {{ badge.code }}</span>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Sección de Progreso -->
+      @if (activeView === 'progress') {
+        <div class="progress-container">
+          <div class="section-header">
+            <h3 class="section-title">Tu Progreso</h3>
+            <p class="section-subtitle">Cursos en los que estás inscrito y tu avance</p>
+          </div>
+          
+          @if (isLoadingProgress) {
+            <div class="loading-state">Cargando progreso...</div>
+          } @else if (userProgress.length === 0) {
+            <div class="empty-state">
+              <p>No estás inscrito en ningún curso</p>
+              <p class="empty-hint">Explora los cursos disponibles y comienza a aprender</p>
+            </div>
+          } @else {
+            <!-- Cursos Completados -->
+            <div class="progress-section">
+              <h4 class="progress-section-title">✅ Cursos Completados</h4>
+              <div class="progress-grid">
+                @for (progress of userProgress; track progress.courseId) {
+                  @if (progress.status === 'completed') {
+                    <div class="progress-card completed">
+                      <div class="progress-card-header">
+                        <h5 class="progress-course-name">{{ progress.courseName }}</h5>
+                        <span class="progress-status-badge completed">Completado</span>
+                      </div>
+                      <div class="progress-card-body">
+                        <div class="progress-date">
+                          <span class="date-label">Iniciado:</span>
+                          <span class="date-value">{{ progress.startedAt | date:'dd/MM/yyyy' }}</span>
+                        </div>
+                        <div class="progress-date">
+                          <span class="date-label">Completado:</span>
+                          <span class="date-value">{{ progress.completedAt | date:'dd/MM/yyyy' }}</span>
+                        </div>
+                      </div>
+                      <div class="progress-card-footer">
+                        <span class="completion-icon">🎉</span>
+                      </div>
+                    </div>
+                  }
+                }
+              </div>
+            </div>
+
+            <!-- Cursos en Progreso -->
+            <div class="progress-section">
+              <h4 class="progress-section-title">📚 Cursos en Progreso</h4>
+              <div class="progress-grid">
+                @for (progress of userProgress; track progress.courseId) {
+                  @if (progress.status === 'started') {
+                    <div class="progress-card started">
+                      <div class="progress-card-header">
+                        <h5 class="progress-course-name">{{ progress.courseName }}</h5>
+                        <span class="progress-status-badge started">En Progreso</span>
+                      </div>
+                      <div class="progress-card-body">
+                        <div class="progress-date">
+                          <span class="date-label">Iniciado:</span>
+                          <span class="date-value">{{ progress.startedAt | date:'dd/MM/yyyy' }}</span>
+                        </div>
+                      </div>
+                      <div class="progress-card-footer">
+                        <button 
+                          class="btn-complete-course"
+                          (click)="navigateToCourse(progress.courseId)">
+                          Continuar Curso
+                        </button>
+                      </div>
+                    </div>
+                  }
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
     </div>
   </div>
 </div>

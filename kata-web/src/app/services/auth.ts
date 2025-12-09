@@ -77,6 +77,56 @@ export class Auth {
     return this.getRole() === 'user';
   }
 
+  getUserEmail(): string | null {
+    const token = this.getToken();
+    if (!token) {
+      console.warn('No hay token disponible');
+      return null;
+    }
+    try {
+      const payloadPart = token.split('.')[1];
+      if (!payloadPart) {
+        console.warn('No se encontró payload en el token');
+        return null;
+      }
+      const payload = JSON.parse(atob(payloadPart));
+      console.log('JWT payload completo:', payload);
+      
+      const email = payload.email;
+      console.log('Email extraído del token:', email);
+      
+      return email || null;
+    } catch (e) {
+      console.warn('No se pudo extraer el email del token', e);
+      return null;
+    }
+  }
+
+  getUserId(): number | null {
+    const token = this.getToken();
+    if (!token) {
+      console.warn('No hay token disponible');
+      return null;
+    }
+    try {
+      const payloadPart = token.split('.')[1];
+      if (!payloadPart) {
+        console.warn('No se encontró payload en el token');
+        return null;
+      }
+      const payload = JSON.parse(atob(payloadPart));
+      
+      // El id está en payload.id o payload.sub
+      const userId = payload.id || (typeof payload.sub === 'number' ? payload.sub : parseInt(payload.sub, 10));
+      console.log('User ID extraído del token:', userId);
+      
+      return userId || null;
+    } catch (e) {
+      console.warn('No se pudo extraer el user ID del token', e);
+      return null;
+    }
+  }
+
   private getStoredRole(): string | null {
     const token = this.getToken();
     if (!token) return null;
